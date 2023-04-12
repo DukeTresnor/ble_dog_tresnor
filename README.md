@@ -9,3 +9,5 @@ Kinematics
         Compile with:    g++ -I eigen-3.4.0 -c dogKinematics.cpp <main-cpp-file-with-.cpp-extension>
         Link with:       g++ dogKinematics.o <main-cpp-file-with-.o-extension> -o <executable-file-name>
 # ble_dog_tresnor
+
+    -- Current task is to clean up this repository, organize it, and have it clearly state what it can do.
