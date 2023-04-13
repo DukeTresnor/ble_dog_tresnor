@@ -11,3 +11,5 @@ Kinematics
 # ble_dog_tresnor
 
     -- Current task is to clean up this repository, organize it, and have it clearly state what it can do.
+    -- eigen-3.4.0 is a directory obtained from https://eigen.tuxfamily.org/index.php?title=Main_Page
+    

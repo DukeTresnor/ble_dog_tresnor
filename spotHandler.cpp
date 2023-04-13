@@ -31,12 +31,15 @@ class SpotHandler
     public:
         SpotHandler();                  // Constructor
         void sendTrajectory(string file, vector<Matrix<float, 3, 1> > trajectory);
-        //void writeToFile(string file, Matrix<float, 3, 1> data);
         void writeToFile(string file, float data[]);
         void readFromFile(string file);
-        vector<Matrix<float, 3, 1> > createJointTrajectory(Matrix<float, 3, 1> theta_list_start, Matrix<float, 3, 1> theta_list_end, float total_motion_time, int number_descrete_points, int time_scaling_method);
-        // Possibly make function that takes in a joint trajectory of a dynamic by 3 size, then
-        //   returns that trajectory as a vector of 3x1 matrices
+        vector<Matrix<float, 3, 1> > createJointTrajectory(
+            Matrix<float, 3, 1> theta_list_start,
+            Matrix<float, 3, 1> theta_list_end,
+            float total_motion_time,
+            int number_descrete_points,
+            int time_scaling_method
+            );
     private:
         DogPathing myPath;
 
@@ -51,9 +54,9 @@ SpotHandler::SpotHandler()              // Constructor
 
 void SpotHandler::sendTrajectory(string file, vector<Matrix<float, 3, 1> > trajectory)
 {
-    // Precondition: a string representing the name of the target device
+    // Precondition -- a string representing the name of the target device
     //               a vector of 3x1 matrices that represents the desired trajectory
-    // Postcondition: Binary data is sent to the target file repeatedly, once for each matrix in
+    // Postcondition -- Binary data is sent to the target file repeatedly, once for each matrix in
     //                  the given trajectory
     for (Matrix<float, 3, 1> jointSet : trajectory)
     {
@@ -74,15 +77,18 @@ void SpotHandler::sendTrajectory(string file, vector<Matrix<float, 3, 1> > traje
         }
         cout << endl;
 
-        //writeToFile(file, jointSet);
         writeToFile(file, floatSet);
         readFromFile(file);
     }
 }
 
-// old parameters: string file, Matrix<float, 3, 1> data
+
 void SpotHandler::writeToFile(string file, float data[])
 {
+    // Precondition -- A string representing the name of the target device
+    //                 Data to be sent into the target file, sent in as an array of floats
+    // Postcondition -- Sends data to an arduino through a serial connection
+
     //int binarySize = 12;
     int binarySize = 4*sizeof(&data);                              // 4 is the amount of bytes in a float
 

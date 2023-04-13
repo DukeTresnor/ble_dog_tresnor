@@ -7,7 +7,7 @@
 
 // more references for eigen -- https://aleksandarhaber.com/starting-with-eigen-c-matrix-library/
 
-
+// This file is the combined form of the dogKinematics.cpp and dogKinematics.h, so this file might not be necessary
 
 #define _USE_MATH_DEFINES
 

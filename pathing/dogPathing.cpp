@@ -68,6 +68,13 @@ Matrix<float, Dynamic, 12> DogPathing::createFullJointTrajectory(Matrix<float, 1
 {
     // Allocates space for a matrix with rows = number_discrete_points, and collumns = 12
     // Each row should have 12 elements corresponding to the 12 joint angles of the robot, from theta_list_start to theta_list_end
+    // Precondition -- theta_list_start: 12x1 matrix of state variables; the starting state of a trajectory
+    //                 theta_list_end: 12x1 matrix of state variables; the ending state of a trajectory
+    //                 total_motion_time: The total amount of time the robot should take on the trajectory
+    //                 number_descrete_points: The number of discrete points in the trajectory
+    //                 time_scaling_method: The method used to scale the time of the trajectory -- can be 3 or 5, which corresponds to a cubic or quintic trajectory, respectively
+    // Postcondition -- An Xx12 matrix of joint values, corresponding to the full joint trajectory that reaches X discrete joint states.
+
     MatrixXf joint_traj(number_descrete_points, 12);
 
     float time_gap = total_motion_time / (number_descrete_points - 1);
@@ -111,6 +118,13 @@ Matrix<float, Dynamic, 3> DogPathing::createLegJointTrajectory(Matrix<float, 3, 
 
     // Allocates space for a matrix with rows = number_discrete_points, and collumns = 3
     // Each row should have 3 elements corresponding to the 3 joint angles of one of the robot's arms, from theta_list_start to theta_list_end
+    // Precondition -- theta_list_start: 3x1 matrix of state variables; the starting state of a trajectory
+    //                 theta_list_end: 3x1 matrix of state variables; the ending state of a trajectory
+    //                 total_motion_time: The total amount of time the robot should take on the trajectory
+    //                 number_descrete_points: The number of discrete points in the trajectory
+    //                 time_scaling_method: The method used to scale the time of the trajectory -- can be 3 or 5, which corresponds to a cubic or quintic trajectory, respectively
+    // Postcondition -- An Xx3 matrix of joint values, corresponding to the full joint trajectory that reaches X discrete joint states.
+
     MatrixXf joint_traj(number_descrete_points, 3);
 
     float time_gap = total_motion_time / (number_descrete_points - 1);
@@ -149,6 +163,13 @@ Matrix<float, Dynamic, 3> DogPathing::createLegJointTrajectory(Matrix<float, 3, 
 
 vector<Matrix<float, 4, 4> > DogPathing::createScrewTrajectory(Matrix<float, 4, 4> start_configuration, Matrix<float, 4, 4> end_configuration, float total_motion_time, int number_descrete_points, int time_scaling_method)
 {
+    // Precondition -- start_configuration: 4x4 transform matrix; the rotation and position of the robot at the start of a trajectory
+    //                 end_configuration: 4x4 transform matrix; the rotation and position of the robot at the end of a trajectory
+    //                 total_motion_time: The total amount of time the robot should take on the trajectory
+    //                 number_descrete_points: The number of discrete points in the trajectory
+    //                 time_scaling_method: The method used to scale the time of the trajectory -- can be 3 or 5, which corresponds to a cubic or quintic trajectory, respectively
+    // Postcondition -- A vector of 4x4 transformation matrices, corresponding to the full joint trajectory that brings the robot from start_configuration to end_configuration
+
     // Trajectory vector -- this is a vector of 4x4 matrices that represent the end effector configurations from the start_configuration
     //    to the end_configuration
     vector<Matrix<float, 4, 4> > configuration_screw_trajectory;
@@ -189,6 +210,7 @@ vector<Matrix<float, 4, 4> > DogPathing::createScrewTrajectory(Matrix<float, 4, 
     return configuration_screw_trajectory;
 }
 
+// Not currently implemented
 vector<Matrix<float, 4, 4> > DogPathing::createCartesianTrajectory(Matrix<float, 4, 4> start_configuration, Matrix<float, 4, 4> end_configuration, float total_motion_time, int number_descrete_points, int time_scaling_method)
 {
     vector<Matrix<float, 4, 4> > configuration_cartesian_trajectory;
@@ -201,7 +223,8 @@ vector<Matrix<float, 4, 4> > DogPathing::createCartesianTrajectory(Matrix<float,
 
 Matrix<float, 4, 4> DogPathing::matrixLogarithmOfTransform(Matrix<float, 4, 4> input_transform)
 {
-    // this is technically conflating matrix logarithm in 6 coor with 3 coor but it should be fine
+    // Precondition -- A 4x4 transformation matrix
+    // Postcondition -- The 4x4 matrix logarithm of the input_transform
 
     // Defining minimum error tolerance for seeing if a matrix is close enough to identity
     float eps = 0.001;
@@ -244,11 +267,10 @@ Matrix<float, 4, 4> DogPathing::matrixLogarithmOfTransform(Matrix<float, 4, 4> i
     screwVector.block<3, 1>(0, 0) = angular_velocity;
     screwVector.block<3, 1>(3, 0) = linear_velocity;
 
-    // Still need to add a * theta to here //
-
     return makeSkewSymmetricMatrix44(screwVector) * theta;
 }
 
+// Getter Functions // 
 Matrix<float, 3, 3> DogPathing::extractRotation(Matrix<float, 4, 4> input_transform)
 {
     Matrix<float, 3, 3> rotation;
@@ -264,6 +286,7 @@ Matrix<float, 3, 1> DogPathing::extractPosition(Matrix<float, 4, 4> input_transf
     position = input_transform.block<3, 1>(0, 3);
     return position;
 }
+// Getter Functions //
 
 Matrix<float, 3, 3> DogPathing::makeSkewSymmetricMatrix33(Matrix<float, 3, 1> input_vector)
 {

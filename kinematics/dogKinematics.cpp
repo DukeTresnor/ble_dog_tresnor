@@ -1,6 +1,6 @@
 #include "dogKinematics.h"
 
-// given a set of joint angles, calculate and populate the object instance's foot transforms relative to its hip transform (its 0 frames for each leg)
+// Given a set of joint angles, calculate and populate the object instance's foot transforms relative to its hip transform (its 0 frames for each leg)
 void DogKinematics::calculateForwardKinematics(Matrix<float, 12, 1> theta_list_var)
 {
 
@@ -14,10 +14,15 @@ void DogKinematics::calculateForwardKinematics(Matrix<float, 12, 1> theta_list_v
     //   Set transforms for hip, shoulder, leg, and foot frames to appropriate angles within theta_list_var
     //   Multiply these transforms together to get T_0_4 -- T_0_4 = T_0_1 * T_1_2 * T_2_3 * T_3_4
     //     T_1_2 is a pure rotation -- in future I can mix it in with T_2_3
-    //
+
+
+    // Precondition -- One 12x1 matrix of angle measurements, corresponding to the current kinematic state of the robot
+
+    // Post Condition -- Four 4x4 transformation matrices, each corresponding to the position and rotation of one of the four legs.
+    //                     Note: This function changes the DogKinematics object's instance variables trans_front_right_0_4, trans_front_left_0_4,
+    //                     trans_rear_right_0_4, and trans_rear_left_0_4. It does not return these matrices
 
     // Front Right Leg
-
     trans_front_right_0_1 << cos(theta_list_var[0]), -sin(theta_list_var[0]), 0, -hip_length * cos(theta_list_var[0]),
         sin(theta_list_var[0]), cos(theta_list_var[0]), 0, -hip_length * sin(theta_list_var[0]),
         0, 0, 1, 0,
@@ -100,10 +105,10 @@ void DogKinematics::calculateForwardKinematics(Matrix<float, 12, 1> theta_list_v
     cout << "I did FK!" << endl;
 }
 
-// given a set of coordinates foot_x, foot_y, and foot_z, describing the position of the foot for a particular leg,
+// Given a set of coordinates foot_x, foot_y, and foot_z, describing the position of the foot for a particular leg,
 //   calculate a possible set of joint angles theta1, theta2, and theta3 for that same leg that will bring the leg
 //   to the desired position
-// given a homogeneous transform X existing in SE(3), find solutions theta that satisfy T(theta) = X
+// Given a homogeneous transform X existing in SE(3), find solutions theta that satisfy T(theta) = X
 void DogKinematics::calculateInverseKinematics(Matrix<float, 4, 4> front_right_foot_transform,
                                 Matrix<float, 4, 4> front_left_foot_transform,
                                 Matrix<float, 4, 4> rear_right_foot_transform,
@@ -119,6 +124,10 @@ void DogKinematics::calculateInverseKinematics(Matrix<float, 4, 4> front_right_f
     //   [foot20, foot21, foot22, { foot23 }],
     //   [foot30, foot31, foot32, foot33]
     // foot33 should be 1
+
+    // Precondition -- Four 4x4 transformation matrices, each corresponding to the position and rotation of one of the four legs.
+    // Postcondition -- The desired theta_list that results in the robot having its four leg transforms matching those sent into this function
+    //                    Note: This function changes the DogKinematics object's instance variable theta_list; It does not return theta_list.
 
     // Front Right
     float front_right_foot_x = front_right_foot_transform(0, 3);
@@ -260,10 +269,14 @@ void DogKinematics::calculateInverseKinematics(Matrix<float, 4, 4> front_right_f
 }
 
 
-
+// Moves the robot's chassis by updating each of its foot transforms
 void DogKinematics::moveBody(Matrix<float, 4, 4> body_change)
 {
+    // Precondition -- A 4x4 transformation matrix that represents the desired movement of the robot's main chassis.
 
+    // Postcondition -- Inverse Kinematics is called, using the 4 updated foot transforms
+    //                    Note: This function changes the robot's four foot transforms such that the resulting change produces the desired body_change
+    //                    That's sent into this function. The function does not return these values.
     Matrix<float, 4, 4> transform_body_front_right_4;
     Matrix<float, 4, 4> transform_body_front_left_4;
     Matrix<float, 4, 4> transform_body_rear_right_4;
@@ -289,10 +302,13 @@ void DogKinematics::moveBody(Matrix<float, 4, 4> body_change)
     
 }
 
+
+// Move Foot Functions // 
+// Precondition -- Each of these functions takes a 4x4 transformation matrix representing the desired movement of a particular foot.
+// Postcondition -- The robot's state matrix is updated.
+//                    Note: These functions do not return the robot's state matrix
 void DogKinematics::moveFrontRightFoot(Matrix<float, 4, 4> foot_change)
 {
-
-
     // Update front right foot transform
     trans_front_right_0_4 = foot_change * trans_front_right_0_4;
 
@@ -338,9 +354,14 @@ void DogKinematics::moveRearLeftFoot(Matrix<float, 4, 4> foot_change)
                                trans_rear_right_0_4,
                                trans_rear_left_0_4);
 }
+// Move Foot Functions //
 
 
 
+
+// Getter functions  //
+// These functions provide easy access to the robot's Body, as well as the its Front Right, Front Left, Rear Right, and Rear Left legs.
+//   It also also users to access the current state variable theta_list.
 Matrix<float, 12, 1> DogKinematics::getThetaList()
 {
     return theta_list;
@@ -350,7 +371,6 @@ Matrix<float, 4, 4> DogKinematics::getBodyTransform()
 {
     return transform_body;
 }
-
 
 Matrix<float, 4, 4> DogKinematics::getFrontRight()
 {
@@ -370,14 +390,15 @@ Matrix<float, 4, 4> DogKinematics::getRearLeft()
 {
     return trans_rear_left_0_4;
 }
+// Getter functions  //
 
 
 
 Matrix<float, 4, 4> DogKinematics::makeSkewSymmetricScrewMatrix(Matrix<float, 6, 1> screw_axis)
 {
-    // precondition -- input should be a 6x1 vector, with the first 3 elements corresponding to angular velocities, and the last 3 corresponding to
+    // Precondition -- input should be a 6x1 vector, with the first 3 elements corresponding to angular velocities, and the last 3 corresponding to
     //                   linear velocities.
-    // postcondition -- output should provide a 4x4 matrix that represents the skew-symmetric representation of screw axis parameter
+    // Postcondition -- output should provide a 4x4 matrix that represents the skew-symmetric representation of screw axis parameter
     Matrix<float, 4, 4> skew_transform;
 
     skew_transform.row(0) << 0, -screw_axis[2], screw_axis[1], screw_axis[3];
@@ -390,6 +411,9 @@ Matrix<float, 4, 4> DogKinematics::makeSkewSymmetricScrewMatrix(Matrix<float, 6,
 
 Matrix<float, 4, 4> DogKinematics::makeTransformMatrix(Matrix<float, 3, 3> rotation, Matrix<float, 3, 1> translation)
 {
+    // Precondition -- input should be a 3x3 rotation matrix, along with a 3x1 translation matrix. 
+    // Postcondition -- output should provide a 4x4 transformation matrix that leads to the same behavior as the rotation and translation matrices
+    //   sent in to this function.
     Matrix<float, 4, 4> transform;
 
     transform.setIdentity();
